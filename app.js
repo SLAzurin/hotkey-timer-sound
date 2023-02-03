@@ -39,6 +39,9 @@ async function main() {
   document
     .getElementById("start-button")
     .addEventListener("click", async () => {
+      document.getElementById(
+        "timer"
+      ).innerHTML = `Time remaining: ${duration}s`;
       await startTimer(duration);
       await playMP3(filePath);
     });

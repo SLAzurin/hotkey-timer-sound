@@ -1,7 +1,9 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, globalShortcut } = require("electron");
+
+let win = null;
 
 const createWindow = () => {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -18,9 +20,29 @@ app.on("window-all-closed", () => {
 });
 
 app.whenReady().then(() => {
+  const ret = globalShortcut.register("CommandOrControl+X", () => {
+    win.webContents.executeJavaScript(
+      'document.getElementById("start-button").click();'
+    );
+    console.log("CommandOrControl+X is pressed");
+  });
+
+  if (!ret) {
+    console.log("registration failed");
+    process.exit(1);
+  }
+
   createWindow();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+});
+
+app.on("will-quit", () => {
+  // Unregister a shortcut.
+  globalShortcut.unregister("CommandOrControl+X");
+
+  // Unregister all shortcuts.
+  globalShortcut.unregisterAll();
 });
