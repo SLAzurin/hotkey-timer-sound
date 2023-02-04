@@ -1,4 +1,5 @@
 const { app, BrowserWindow, globalShortcut } = require("electron");
+if (require("electron-squirrel-startup")) app.quit();
 
 let win = null;
 
