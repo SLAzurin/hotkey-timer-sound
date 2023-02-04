@@ -1,10 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <script src="app.js"></script>
-</head>
-<body>
-  <button id="start-button">Start Timer</button>
-  <p id="timer"></p>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="app.js"></script>
+    <link rel="stylesheet" type="text/css" href="app.css" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' 'unsafe-inline';"
+    />
+  </head>
+  <body>
+    <div id="main-container">
+      <button id="start-button">Start Timer</button>
+      <p id="timer">placeholder</p>
+      <hr />
+      <button id="test-audio">Play/Stop audio</button>
+      <div>
+        <label for="volume">Volume: </label>
+        <input
+          id="volume-slider"
+          name="volume"
+          type="range"
+          min="1"
+          max="100"
+          value="10"
+        />
+      </div>
+      <input
+        id="mp3-file"
+        type="text"
+        placeholder="Discotheque.mp3"
+        value="Discotheque.mp3"
+      />
+    </div>
+  </body>
 </html>
