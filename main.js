@@ -21,11 +21,11 @@ app.on("window-all-closed", () => {
 });
 
 app.whenReady().then(() => {
-  const ret = globalShortcut.register("CommandOrControl+1", () => {
+  const ret = globalShortcut.register("num1", () => {
     win.webContents.executeJavaScript(
       'document.getElementById("start-button").click();'
     );
-    console.log("CommandOrControl+1 is pressed");
+    console.log("num1 is pressed");
   });
 
   if (!ret) {

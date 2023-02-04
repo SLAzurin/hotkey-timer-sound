@@ -1,5 +1,6 @@
 const fs = require("fs");
-let player = null;
+let player = new Audio();
+player.currentTime = 0;
 let duration = 10; //prompt(`Enter timer duration in seconds: `);
 let filePath = "Discotheque.mp3"; //prompt(`Enter MP3 file path: `);
 let volume = 0.1;
@@ -26,12 +27,9 @@ function startTimer(duration, callback) {
 
 async function playMP3(filePath) {
   return new Promise((resolve, reject) => {
-    if (player == null) {
-      player = new Audio(filePath);
-    }
-    player.src = filePath;
-    player.pause();
     player.currentTime = 0;
+    player.pause();
+    player.src = filePath;
     player.volume = volume;
     player
       .play()
@@ -47,10 +45,8 @@ async function playMP3(filePath) {
 const resetAll = () => {
   clearInterval(intervalId);
   clearTimeout(timeoutId);
-  if (player) {
-    player.pause();
-    player = null;
-  }
+  player.currentTime = 0;
+  player.pause();
 };
 
 async function main() {
@@ -66,8 +62,12 @@ async function main() {
     });
 
   document.getElementById("test-audio").addEventListener("click", async () => {
-    resetAll();
-    await playMP3(filePath);
+    if (player.currentTime == 0) {
+      await playMP3(filePath);
+      return;
+    } else {
+      resetAll();
+    }
   });
   document.getElementById("volume-slider").addEventListener("input", (e) => {
     volume = Number(e.target.value) / 100;
