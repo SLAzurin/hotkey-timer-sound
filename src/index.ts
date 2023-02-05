@@ -37,9 +37,7 @@ const createWindow = (): void => {
 app.on("ready", () => {
   for (let i = 1; i <= 9; i++) {
     const ret = globalShortcut.register("num" + i, () => {
-      mainWindow.webContents.executeJavaScript(
-        'document.getElementById("start-button").click();'
-      );
+      mainWindow.webContents.executeJavaScript(`onHotkey("num${i}");`);
       console.log("num" + i + " is pressed");
     });
 

@@ -1,4 +1,14 @@
-function App() {
+import { useEffect } from "react";
+
+const App = () => {
+  useEffect(() => {
+    (window as any).onHotkey = onHotkey;
+  }, []);
+
+  const onHotkey = (hotkey: Electron.Accelerator) => {
+    console.log(hotkey);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -13,9 +23,10 @@ function App() {
         >
           Learn React
         </a>
+        <button id="start-button"></button>
       </header>
     </div>
   );
-}
+};
 
 export default App;
