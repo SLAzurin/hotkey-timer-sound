@@ -1,38 +1,48 @@
-/**
- * This file will automatically be loaded by webpack and run in the "renderer" context.
- * To learn more about the differences between the "main" and the "renderer" context in
- * Electron, visit:
- *
- * https://electronjs.org/docs/latest/tutorial/process-model
- *
- * By default, Node.js integration in this file is disabled. When enabling Node.js integration
- * in a renderer process, please be aware of potential security implications. You can read
- * more about security risks here:
- *
- * https://electronjs.org/docs/tutorial/security
- *
- * To enable Node.js integration in this file, open up `main.js` and enable the `nodeIntegration`
- * flag:
- *
- * ```
- *  // Create the browser window.
- *  mainWindow = new BrowserWindow({
- *    width: 800,
- *    height: 600,
- *    webPreferences: {
- *      nodeIntegration: true
- *    }
- *  });
- * ```
- */
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import "./index.css";
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+import hotkeys from './hotkeys'
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const { protocol } = window.require('electron')
+const url = window.require('url')
+
+// use this to determine whether to hack behaviour because it's running from web server instead of from file system
+const isRunningFromWebServer = __dirname.includes('.webpack')
+
+// not defined in https://en.wikipedia.org/wiki/List_of_URI_schemes, used as a hack when running from web server
+const schemeName = 'local'
+const scheme = `${schemeName}://`
+
+;(window as any).convertPathToUrl = (path: string) => {
+  return !isRunningFromWebServer
+    ? url.pathToFileURL(path).toString()
+    : `${scheme}${encodeURIComponent(path)}`
+}
+;(function () {
+  if (!isRunningFromWebServer) return
+  protocol.registerFileProtocol(schemeName, (request, callback) => {
+    // undo the mangling that was done in convertPathToUrl
+    const path = decodeURIComponent(request.url.slice(scheme.length))
+    try {
+      return callback(path)
+    } catch (error) {
+      console.error(
+        `ERROR: registerFileProtocol: Could not get file path: error: ${error}, path: ${path}`,
+      )
+    }
+  })
+})()
+
+const root = ReactDOM.createRoot(document.getElementById('root'))
+;((window as any).globalHotkeyFunctions as { [key: string]: Function | null }) =
+  {}
+hotkeys.forEach((hotkey) => {
+  ;(window as any).globalHotkeyFunctions[hotkey] = null
+})
+
 root.render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+    <App hotkeys={hotkeys} />
+  </React.StrictMode>,
+)
