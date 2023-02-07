@@ -1,43 +1,44 @@
 import { useEffect, useState } from 'react'
+import { convertBase64 } from './helper'
 
 const Timer = ({ hotkey }: { hotkey: string }) => {
-  const [filePath, setFilePath] = useState('./Discotheque.mp3')
+  const [filePath, setFilePath] = useState('')
   const [volume, setVolume] = useState(10)
-  const [player] = useState(new Audio())
   const [duration, setDuration] = useState(10)
   const [playerError, setPlayerError] = useState('')
   const onHotkey = () => {
     console.log('onHotkey', hotkey)
   }
   useEffect(() => {
-    console.log('Setting player src', filePath)
-    player.src = (window as any).convertPathToUrl(filePath).toString()
-  }, [filePath, player])
+    // console.log('Setting player src', filePath)
+    ;(window as any).globalHotkeyFunctions[hotkey].player.src = filePath
+  }, [filePath])
 
   useEffect(() => {
-    player.volume = volume / 100
+    ;(window as any).globalHotkeyFunctions[hotkey].player.volume = volume / 100
   }, [volume])
 
   useEffect(() => {
-    console.log(hotkey)
-    ;(window as any).globalHotkeyFunctions[hotkey] = () => {
+    ;(window as any).globalHotkeyFunctions[hotkey].fn = () => {
       onHotkey()
     }
   }, [])
 
   const playPause = () => {
-    if (player.currentTime === 0) {
-      player
+    if (
+      (window as any).globalHotkeyFunctions[hotkey].player.currentTime === 0
+    ) {
+      ;(window as any).globalHotkeyFunctions[hotkey].player
         .play()
         .then(() => {
           setPlayerError('')
         })
-        .catch((e) => {
+        .catch((e: any) => {
           setPlayerError(e.toString())
         })
     } else {
-      player.pause()
-      player.currentTime = 0
+      ;(window as any).globalHotkeyFunctions[hotkey].player.pause()
+      ;(window as any).globalHotkeyFunctions[hotkey].player.currentTime = 0
     }
   }
 
@@ -72,11 +73,16 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
         </div>
         <input
           id="mp3-file"
-          type="text"
-          placeholder="Discotheque.mp3"
-          value={filePath}
-          onChange={(e) => {
-            setFilePath(e.target.value)
+          type="file"
+          accept="audio/mpeg"
+          onChange={async (e) => {
+            console.log(e.target.files[0])
+            if (e.target.files[0]) {
+              const base64: string = (await convertBase64(
+                e.target.files[0],
+              )) as string
+              setFilePath(base64)
+            }
           }}
         />
       </div>

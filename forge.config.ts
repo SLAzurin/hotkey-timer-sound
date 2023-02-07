@@ -20,17 +20,16 @@ const config: ForgeConfig = {
   plugins: [
     new WebpackPlugin({
       mainConfig,
-      devContentSecurityPolicy: `default-src 'self' 'unsafe-inline' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' data:; img-src local:`,
       renderer: {
         config: rendererConfig,
         entryPoints: [
           {
             html: './src/index.html',
-            js: './src/renderer.tsx',
+            js: './src/renderer.ts',
             name: 'main_window',
             preload: {
               js: './src/preload.ts',
-            },
+            }, 
           },
         ],
       },

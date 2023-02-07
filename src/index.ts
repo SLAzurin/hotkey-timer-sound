@@ -25,12 +25,13 @@ const createWindow = (): void => {
   })
 
   // and load the index.html of the app.
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY).then(() => {
-    mainWindow.webContents.executeJavaScript(``)
-  })
+  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
+  mainWindow.on('closed', () => {
+    window = null
+  })
 }
 
 // This method will be called when Electron has finished
@@ -42,7 +43,7 @@ app.on('ready', () => {
   hotkeys.forEach((hotkey: string) => {
     const ret = globalShortcut.register(hotkey, () => {
       mainWindow.webContents.executeJavaScript(
-        `if (window.globalHotkeyFunctions["${hotkey}"]) window.globalHotkeyFunctions["${hotkey}"]();`,
+        `if (window.globalHotkeyFunctions["${hotkey}"].fn) window.globalHotkeyFunctions["${hotkey}"].fn();`,
       )
       console.log(hotkey + ' is pressed')
     })
