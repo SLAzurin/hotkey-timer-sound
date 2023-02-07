@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { convertBase64 } from './helper'
 
 const Timer = ({ hotkey }: { hotkey: string }) => {
@@ -6,8 +6,15 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
   const [volume, setVolume] = useState(10)
   const [duration, setDuration] = useState(10)
   const [playerError, setPlayerError] = useState('')
+  const [timers, setTimers] = useState<any>()
+  const timersRef = useRef(timers)
+  timersRef.current = timers
+  const [remainingTime, setRemainingTime] = useState(duration * 1000)
+  const intervalTime = 100
+
   const onHotkey = () => {
     console.log('onHotkey', hotkey)
+    startTimer()
   }
   useEffect(() => {
     // console.log('Setting player src', filePath)
@@ -42,13 +49,57 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
     }
   }
 
+  const startTimer = () => {
+    if (timers) {
+      clearInterval(timers.interval)
+      clearTimeout(timers.timeout)
+      setTimers(null)
+      setRemainingTime(duration * 1000)
+      return
+    }
+    setTimers({
+      timeout: setTimeout(() => {
+        clearInterval(timersRef.current.interval)
+        setTimers(null)
+        playPause()
+      }, duration * 1000),
+      interval: setInterval(() => {
+        setRemainingTime((remainingTime) =>
+          remainingTime >= intervalTime
+            ? remainingTime - intervalTime
+            : remainingTime,
+        )
+        if (remainingTime <= 0) {
+          clearInterval(timersRef.current.interval)
+        }
+      }, intervalTime),
+    })
+  }
+
   return (
     <div>
       <h1 style={{ textAlign: 'center' }}>Timer for {hotkey}</h1>
       <div id="main-container">
-        <button id="start-button">Start Timer</button>
-        <p id="timer">Time remaining: {}s</p>
+        <button
+          id="start-button"
+          onClick={() => {
+            startTimer()
+          }}
+        >
+          Start Timer
+        </button>
+        <p id="timer">Time remaining: {(remainingTime / 1000).toFixed(1)}s</p>
         <hr />
+        <input
+          type="number"
+          min="1"
+          step="1"
+          value={duration}
+          onChange={(e) => {
+            setDuration(Number(e.target.value))
+            setRemainingTime(Number(e.target.value) * 1000)
+          }}
+        ></input>
         <button
           id="test-audio"
           onClick={() => {
