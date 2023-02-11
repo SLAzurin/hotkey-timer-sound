@@ -1,4 +1,5 @@
 export default [
+  // 'CommandOrControl+1',
   'num1',
   'num2',
   'num3',
