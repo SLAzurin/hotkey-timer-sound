@@ -3,8 +3,12 @@ import { convertBase64 } from './helper'
 
 const Timer = ({ hotkey }: { hotkey: string }) => {
   const [filePath, setFilePath] = useState('')
+  const filePathRef = useRef(filePath)
+  filePathRef.current = filePath
   const [volume, setVolume] = useState(10)
   const [duration, setDuration] = useState(10)
+  const durationRef = useRef(duration)
+  durationRef.current = duration
   const [playerError, setPlayerError] = useState('')
   const [isPlaying, setPlaying] = useState(false)
   const [timers, setTimers] = useState<any>()
@@ -35,12 +39,12 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
   }, [])
 
   const playPause = () => {
-    if (filePath === '') return
+    if (filePathRef.current === '') return
     if (
       (window as any).globalHotkeyFunctions[hotkey].player.currentTime === 0 ||
       (window as any).globalHotkeyFunctions[hotkey].player.ended
     ) {
-      (window as any).globalHotkeyFunctions[hotkey].player.currentTime = 0
+      ;(window as any).globalHotkeyFunctions[hotkey].player.currentTime = 0
       ;(window as any).globalHotkeyFunctions[hotkey].player
         .play()
         .then(() => {
@@ -59,20 +63,25 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
   }
 
   const startTimer = () => {
-    if (filePath === '') return
-    if (timers) {
-      clearInterval(timers.interval)
-      clearTimeout(timers.timeout)
+    if (filePathRef.current === '') return
+    if (timersRef.current) {
+      clearInterval(timersRef.current.interval)
+      clearTimeout(timersRef.current.timeout)
       setTimers(null)
-      setRemainingTime(duration * 1000)
+      setRemainingTime(durationRef.current * 1000)
       return
     }
+    setPlaying(false)
+    ;(window as any).globalHotkeyFunctions[hotkey].player.pause()
+    ;(window as any).globalHotkeyFunctions[hotkey].player.currentTime = 0
     setTimers({
       timeout: setTimeout(() => {
         clearInterval(timersRef.current.interval)
+        clearTimeout(timersRef.current.timeout)
         setTimers(null)
+        setRemainingTime(durationRef.current * 1000)
         playPause()
-      }, duration * 1000),
+      }, durationRef.current * 1000),
       interval: setInterval(() => {
         setRemainingTime((remainingTime) =>
           remainingTime >= intervalTime
