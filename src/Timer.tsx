@@ -1,34 +1,47 @@
 import { useEffect, useRef, useState } from 'react'
 import { convertBase64 } from './helper'
+const { ipcRenderer } = window.require('electron')
 
 const Timer = ({ hotkey }: { hotkey: string }) => {
-  const [filePath, setFilePath] = useState('')
-  const filePathRef = useRef(filePath)
-  filePathRef.current = filePath
-  const [volume, setVolume] = useState(10)
-  const [duration, setDuration] = useState(10)
-  const durationRef = useRef(duration)
-  durationRef.current = duration
+  const setStoreValue = (key: string, value: any) => {
+    ipcRenderer.send('setStoreValue', key, value)
+  }
+  const getStoreValue = (key: string, defaults: any) => {
+    return ipcRenderer.invoke('getStoreValue', key, defaults)
+  }
+  const [filePath, setFilePath] = useState({ default: true, value: '' })
+  const filePathRef = useRef(filePath.value)
+  filePathRef.current = filePath.value
+  const [volume, setVolume] = useState({ default: true, value: 10 })
+  const [duration, setDuration] = useState({ default: true, value: 10 })
+  const durationRef = useRef(duration.value)
+  durationRef.current = duration.value
   const [playerError, setPlayerError] = useState('')
   const [isPlaying, setPlaying] = useState(false)
   const [timers, setTimers] = useState<any>()
   const timersRef = useRef(timers)
   timersRef.current = timers
-  const [remainingTime, setRemainingTime] = useState(duration * 1000)
+  const [remainingTime, setRemainingTime] = useState(duration.value * 1000)
   const intervalTime = 100
   const [loadingAudio, setLoadingAudio] = useState(false)
 
   const onHotkey = () => {
-    console.log('onHotkey', hotkey)
     startTimer()
   }
   useEffect(() => {
-    ;(window as any).globalHotkeyFunctions[hotkey].player.src = filePath
+    ;(window as any).globalHotkeyFunctions[hotkey].player.src = filePath.value
+    if (!filePath.default) setStoreValue(`${hotkey}.src`, filePath.value)
   }, [filePath])
 
   useEffect(() => {
-    ;(window as any).globalHotkeyFunctions[hotkey].player.volume = volume / 100
+    ;(window as any).globalHotkeyFunctions[hotkey].player.volume =
+      volume.value / 100
+    if (!volume.default) setStoreValue(hotkey + '.vol', volume.value)
   }, [volume])
+
+  useEffect(() => {
+    if (!duration.default) setStoreValue(hotkey + '.duration', duration.value)
+  }, [duration])
 
   useEffect(() => {
     ;(window as any).globalHotkeyFunctions[hotkey].fn = () => {
@@ -37,6 +50,23 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
     ;(window as any).globalHotkeyFunctions[hotkey].player.onended = () => {
       setPlaying(false)
     }
+    ;(async () => {
+      const { src, vol, duration } = await getStoreValue(hotkey, {
+        src: '',
+        vol: 10,
+        duration: 10,
+      })
+      if (src) {
+        setFilePath({ default: false, value: src })
+      }
+      if (vol) {
+        setVolume({ default: false, value: vol })
+      }
+      if (duration) {
+        setDuration({ default: false, value: duration })
+        setRemainingTime(duration * 1000)
+      }
+    })()
   }, [])
 
   const playPause = () => {
@@ -114,9 +144,9 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
           type="number"
           min="1"
           step="1"
-          value={duration}
+          value={duration.value}
           onChange={(e) => {
-            setDuration(Number(e.target.value))
+            setDuration({ default: false, value: Number(e.target.value) })
             setRemainingTime(Number(e.target.value) * 1000)
           }}
         ></input>
@@ -136,9 +166,9 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
             type="range"
             min="1"
             max="100"
-            value={volume}
+            value={volume.value}
             onChange={(e) => {
-              setVolume(Number(e.target.value))
+              setVolume({ default: false, value: Number(e.target.value) })
             }}
           />
         </div>
@@ -152,15 +182,18 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
               const base64: string = (await convertBase64(
                 e.target.files[0],
               )) as string
-              setFilePath(base64)
+              setFilePath({
+                default: false,
+                value: base64,
+              })
             }
             setLoadingAudio(false)
           }}
         />
-        {filePath !== '' ? (
+        {filePath.value !== '' ? (
           <button
             onClick={() => {
-              setFilePath('')
+              setFilePath({ default: false, value: '' })
             }}
           >
             Unset
