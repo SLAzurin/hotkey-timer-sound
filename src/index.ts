@@ -30,7 +30,7 @@ const createWindow = (): void => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
   mainWindow.on('closed', () => {
-    window = null
+    mainWindow = null
   })
 }
 
@@ -49,7 +49,7 @@ app.on('ready', () => {
     })
 
     if (!ret) {
-      console.log('registration failed for ')
+      console.log('registration failed for', hotkey)
       process.exit(1)
     }
   })
