@@ -16,6 +16,7 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
   timersRef.current = timers
   const [remainingTime, setRemainingTime] = useState(duration * 1000)
   const intervalTime = 100
+  const [loadingAudio, setLoadingAudio] = useState(false)
 
   const onHotkey = () => {
     console.log('onHotkey', hotkey)
@@ -142,19 +143,38 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
           />
         </div>
         <input
+          style={{ display: 'none' }}
           id="mp3-file"
           type="file"
           accept="audio/*"
           onChange={async (e) => {
-            console.log(e.target.files[0])
             if (e.target.files[0]) {
               const base64: string = (await convertBase64(
                 e.target.files[0],
               )) as string
               setFilePath(base64)
             }
+            setLoadingAudio(false)
           }}
         />
+        {filePath !== '' ? (
+          <button
+            onClick={() => {
+              setFilePath('')
+            }}
+          >
+            Unset audio track
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setLoadingAudio(true)
+              document.getElementById('mp3-file').click()
+            }}
+          >
+            {loadingAudio ? 'Loading...' : 'Set audio track'}
+          </button>
+        )}
       </div>
       <p style={{ color: 'red' }}>{playerError}</p>
       <div style={{ paddingTop: '1rem', paddingBottom: '1rem' }} />
