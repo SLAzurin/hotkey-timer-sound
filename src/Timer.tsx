@@ -163,7 +163,7 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
               setFilePath('')
             }}
           >
-            Unset audio track
+            Unset
           </button>
         ) : (
           <button
