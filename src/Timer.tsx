@@ -6,6 +6,7 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
   const [volume, setVolume] = useState(10)
   const [duration, setDuration] = useState(10)
   const [playerError, setPlayerError] = useState('')
+  const [isPlaying, setPlaying] = useState(false)
   const [timers, setTimers] = useState<any>()
   const timersRef = useRef(timers)
   timersRef.current = timers
@@ -17,7 +18,6 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
     startTimer()
   }
   useEffect(() => {
-    // console.log('Setting player src', filePath)
     ;(window as any).globalHotkeyFunctions[hotkey].player.src = filePath
   }, [filePath])
 
@@ -29,27 +29,37 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
     ;(window as any).globalHotkeyFunctions[hotkey].fn = () => {
       onHotkey()
     }
+    ;(window as any).globalHotkeyFunctions[hotkey].player.onended = () => {
+      setPlaying(false)
+    }
   }, [])
 
   const playPause = () => {
+    if (filePath === '') return
     if (
-      (window as any).globalHotkeyFunctions[hotkey].player.currentTime === 0
+      (window as any).globalHotkeyFunctions[hotkey].player.currentTime === 0 ||
+      (window as any).globalHotkeyFunctions[hotkey].player.ended
     ) {
+      (window as any).globalHotkeyFunctions[hotkey].player.currentTime = 0
       ;(window as any).globalHotkeyFunctions[hotkey].player
         .play()
         .then(() => {
           setPlayerError('')
+          setPlaying(true)
         })
         .catch((e: any) => {
           setPlayerError(e.toString())
+          setPlaying(false)
         })
     } else {
+      setPlaying(false)
       ;(window as any).globalHotkeyFunctions[hotkey].player.pause()
       ;(window as any).globalHotkeyFunctions[hotkey].player.currentTime = 0
     }
   }
 
   const startTimer = () => {
+    if (filePath === '') return
     if (timers) {
       clearInterval(timers.interval)
       clearTimeout(timers.timeout)
@@ -106,7 +116,7 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
             playPause()
           }}
         >
-          Play/Stop audio
+          {isPlaying ? 'Pause' : 'Play'} audio
         </button>
         <div>
           <label htmlFor="volume">Volume: </label>
@@ -125,7 +135,7 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
         <input
           id="mp3-file"
           type="file"
-          accept="audio/mpeg"
+          accept="audio/*"
           onChange={async (e) => {
             console.log(e.target.files[0])
             if (e.target.files[0]) {
