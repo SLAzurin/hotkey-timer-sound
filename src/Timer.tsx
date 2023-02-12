@@ -175,7 +175,7 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
         </div>
         <input
           style={{ display: 'none' }}
-          id="mp3-file"
+          id={'mp3-file-' + hotkey}
           type="file"
           accept="audio/*"
           onChange={async (e) => {
@@ -203,7 +203,7 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
           <button
             onClick={() => {
               setLoadingAudio(true)
-              document.getElementById('mp3-file').click()
+              document.getElementById('mp3-file-' + hotkey).click()
             }}
           >
             {loadingAudio ? 'Loading...' : 'Set audio track'}
