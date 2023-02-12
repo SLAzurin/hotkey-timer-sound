@@ -4,10 +4,10 @@ const { ipcRenderer } = window.require('electron')
 
 const Timer = ({ hotkey }: { hotkey: string }) => {
   const setStoreValue = (key: string, value: any) => {
-    ipcRenderer.send('setStoreValue', key, value)
+    ipcRenderer.send('setStoreValue', hotkey, key, value)
   }
   const getStoreValue = (key: string, defaults: any) => {
-    return ipcRenderer.invoke('getStoreValue', key, defaults)
+    return ipcRenderer.invoke('getStoreValue', hotkey, key, defaults)
   }
   const [filePath, setFilePath] = useState({ default: true, value: '' })
   const filePathRef = useRef(filePath.value)
@@ -30,7 +30,8 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
   }
   useEffect(() => {
     ;(window as any).globalHotkeyFunctions[hotkey].player.src = filePath.value
-    if (!filePath.default) setStoreValue(`${hotkey}.src`, filePath.value)
+    if (!filePath.default)
+      setStoreValue(`${hotkey}.src`, filePath.value.match(/.{1,40}/g) ?? [])
   }, [filePath])
 
   useEffect(() => {
@@ -56,8 +57,8 @@ const Timer = ({ hotkey }: { hotkey: string }) => {
         vol: 10,
         duration: 10,
       })
-      if (src) {
-        setFilePath({ default: false, value: src })
+      if (src !== '') {
+        setFilePath({ default: false, value: src.join('') })
       }
       if (vol) {
         setVolume({ default: false, value: vol })

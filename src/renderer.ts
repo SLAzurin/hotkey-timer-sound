@@ -4,7 +4,7 @@ import App from './App'
 import './index.css'
 import hotkeys from './hotkeys'
 ;((window as any).globalHotkeyFunctions as {
-  [key: string]: { fn: Function | null; player: HTMLAudioElement }
+  [key: string]: { fn: () => void | null; player: HTMLAudioElement }
 }) = {}
 hotkeys.forEach((hotkey) => {
   ;(window as any).globalHotkeyFunctions[hotkey] = {

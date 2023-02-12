@@ -11,14 +11,14 @@ if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
-const store = new Store()
+let stores: { [key: string]: any } = {}
 
-ipcMain.on('setStoreValue', (event, key, value) => {
-  store.set(key, value)
+ipcMain.on('setStoreValue', (event, storeName, key, value) => {
+  stores[storeName].set(key, value)
 })
 
-ipcMain.handle('getStoreValue', (event, key, defaults) => {
-  return store.get(key, defaults)
+ipcMain.handle('getStoreValue', (event, storeName, key, defaults) => {
+  return stores[storeName].get(key, defaults)
 })
 
 let mainWindow: BrowserWindow
@@ -62,6 +62,7 @@ app.on('ready', () => {
       console.log('registration failed for', hotkey)
       process.exit(1)
     }
+    stores[hotkey] = new Store({ name: hotkey })
   })
 
   createWindow()
